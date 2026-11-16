@@ -219,7 +219,7 @@ const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth
 function tbGet(){let t={};try{t=JSON.parse(localStorage.getItem(TBKEY)||'{}')}catch(e){}if(t.day!==today())t={day:today(),earned:0,used:0};return t}
 function tbSet(t){try{localStorage.setItem(TBKEY,JSON.stringify(t))}catch(e){}}
 function tbEarn(min){const t=tbGet();const add=Math.max(0,Math.min(min,TBMAX-t.earned));t.earned+=add;tbSet(t);return{add,t}}
-function tbBlock(st,bonus){/* st: izarrak; bonus: azterketa */
+function tbBlock(st,bonus){/* st: izarrak; bonus: azterketa */if(st===3){try{const k=new Date().toISOString().slice(0,10),o=JSON.parse(localStorage.getItem('june-3stars-v1')||'{}');o[k]=(o[k]||0)+1;localStorage.setItem('june-3stars-v1',JSON.stringify(o))}catch(e){}}
  const min=bonus?5:st===3?3:st===2?2:1;
  const{add,t}=tbEarn(min);
  if(!add)return `<div class="tbbox">📺 Gaurko gehienekoa lortuta: <b>${TBMAX} minutu</b>! Bihar gehiago. 🌙</div>`;
