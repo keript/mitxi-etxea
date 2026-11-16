@@ -1,0 +1,1 @@
+{"name": "Mitxiren etxea", "short_name": "Mitxi", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#fbf7fd", "theme_color": "#c9a7f5", "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png"}, {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]}
