@@ -1,5 +1,5 @@
-// Mitxiren etxea · 2026-11-21 11:07
-const C='mitxi-v1795255658';
+// Mitxiren etxea · 2026-11-21 11:19
+const C='mitxi-v1795256369';
 const FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','dia/','hamartar/','euskara/','klima/','ingurune/','lengua/','zatikiak/'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(FILES)).catch(()=>{}))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

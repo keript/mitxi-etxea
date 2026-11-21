@@ -172,7 +172,7 @@ function examPops(){(D.exams||[]).filter(e=>e.grade!=null&&!e.seen).forEach(e=>{
 function studyName(d){const[p,m]=plan(d);const x=SUBJ[p];return `Estudiar ${m} min: ${x[0]} ${x[1]}`}
 const tname=(t,d)=>t.id==='est'?studyName(d):t.n;
 const MOODS=['😄','🙂','😐','😴','😢'];
-function load(){let d={};try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}d.tasks=d.tasks||JSON.parse(JSON.stringify(DEF));d.log=d.log||{};if(!d.v5){d.tasks=d.tasks.filter(t=>t.id!=='cam');d.v5=1}if(!d.v4){d.tasks.forEach(t=>{t.k=(t.r&&t.s!=='n')||t.id==='cen'?1:0});d.v4=1}if(!d.v3){d.tasks.forEach(t=>{if(t.id==='cen')t.m=10});d.v3=1}if(!d.v2){d.tasks.forEach(t=>{if(t.id==='cen'||t.id==='die2')t.r=1});d.v2=1}return d}
+function load(){let d={};try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}d.tasks=d.tasks||JSON.parse(JSON.stringify(DEF));d.log=d.log||{};if(!d.ex26){d.exams=d.exams||[];if(!d.exams.some(e=>e.s==='mate'&&e.date==='2026-11-26'))d.exams.push({id:'e26mate',s:'mate',date:'2026-11-26',t:'Zenbaki hamartarrak',grade:null});d.ex26=1}if(!d.v5){d.tasks=d.tasks.filter(t=>t.id!=='cam');d.v5=1}if(!d.v4){d.tasks.forEach(t=>{t.k=(t.r&&t.s!=='n')||t.id==='cen'?1:0});d.v4=1}if(!d.v3){d.tasks.forEach(t=>{if(t.id==='cen')t.m=10});d.v3=1}if(!d.v2){d.tasks.forEach(t=>{if(t.id==='cen'||t.id==='die2')t.r=1});d.v2=1}return d}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}}
 let D=load();
 function day(k=today()){D.log[k]=D.log[k]||{done:[],mood:'',note:'',ok:0,bonus:0};return D.log[k]}
