@@ -123,6 +123,7 @@ input.word{font:inherit;font-family:Fredoka,Nunito,sans-serif;font-size:28px;bor
 .mitxi-says{font-size:22px;text-align:center;background:var(--hori2);border-radius:18px;padding:14px;margin:10px 0;line-height:1.6}
 .mbtn.lock,.lvl.lock{filter:grayscale(.9);opacity:.55}
 .ex{display:block;font-family:Fredoka,Nunito,sans-serif;font-size:22px;background:#faf6fd;border-radius:12px;padding:8px 12px;margin-top:6px;line-height:1.5}
+.exn{background:var(--hori2);border:3px solid var(--hori)}.notes{display:flex;gap:8px;align-items:flex-end;height:110px;margin-top:8px}.notes div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}.notes b{display:block;width:70%;height:var(--h);background:var(--menda);border-radius:8px 8px 0 0}.notes span{font-weight:800}.notes small{font-size:12px;color:var(--soft)}
 .opts.col .opt{text-align:left;font-size:18px}
 </style>
 </head>
@@ -236,7 +237,7 @@ function tbUse(){if($('#pin').value!==TBPIN){$('#fb').className='fb bad';$('#fb'
 /* ===== Mitxiren hamartar-misioa · 6. maila · 4. unitatea ===== */
 let S={stars:{},coll:[],nail:'#c9a7f5',sound:true,open:{1:true}};
 try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
-S.open=S.open||{1:true};S.open[1]=true;
+S.open={1:true,2:true,3:true,4:true,5:true};S.notes=S.notes||{};
 const PRA=['Zuzena!','Oso ondo!','Primeran!','Bikain!','Hori da!','Ederki!'];
 const RI=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 /* --- zenbaki hamartarrak: zehatz, zatiki batetik --- */
@@ -305,7 +306,45 @@ function qAsmatu(){const n=P([98,37,45,26,74]),d=P([8,4,5,2]);const op=`${n} : $
  const bad=shuffle([`${n} € zituen eta ${d} € gastatu ditu. Zenbat geratzen zaizkio?`,`${d} kutxa daude eta bakoitzean ${n} squishy. Zenbat squishy guztira?`,`${n} lagun daude eta ${d} lagun gehiago etorri dira. Zenbat dira orain?`]).slice(0,3);
  return{lv:12,blk:1,kind:'ch',prompt:`✍️ Zein buruketa ebazten da <b>${op}</b> eginez?`,expr:'',opts:shuffle([good,...bad]),ans:good,col:true,
   hint:`Zatiketa = <b>zati berdinetan banatu</b> edo moztu. Ez da kentzea, ez biderkatzea, ez batzea.`,sol:`<b>${good}</b><br>Orain asmatu zuk beste bat koadernoan! ✍️`}}
-const GEN={2:qJauzi,3:qZat,4:qKoma,5:qTaula,6:()=>Math.random()<.7?qZatiki():qAstun(),7:qBider,8:qZat1,9:qZat2,10:qMitxi,11:qBurua,12:qAsmatu};
+
+/* ===== 21-11: zatiketak zeroarekin, buruketa gidatuak, eguneko azterketa txikia ===== */
+const EXDATE='2026-11-26';
+function qZero(){const d=RI(2,9);const a=RI(1,6),b=RI(1,9);const r=a*100+b;const A=dec(r*d,100),ans=dec(r,100);
+ return{lv:13,blk:4,kind:'num',prompt:'Zatitu. Kontuz zeroarekin!',expr:`<div class="big-op">${A} : ${d}</div>`,ans,
+  hint:`Hamarrenak: ${Math.floor((r*d)%100/10)} : ${d} ez da iristen → zatiduran <b>0</b> jarri, eta jarraitu ehunenekin.`,sol:`${A} : ${d} = <b>${ans}</b> (egiaztatu: ${ans} × ${d} = ${A})`}}
+function qZatMix(){return P([qZat1,qZat1,qZero,qZat2,qZat])()}
+// buruketa gidatuak: 3 urrats (eragiketa · kalkulua · erantzuna)
+const OPS=['➗ Zatiketa','✖️ Biderketa','➕ Batuketa','➖ Kenketa'];
+function gProblems(){const T=[
+ ()=>{const d=RI(3,8),r=RI(105,399);const A=dec(r*d,100),ans=dec(r,100);return{t:`${A} L zuku ${d} botilatan banatu dira, berdin. Zenbat litro botila bakoitzean?`,op:OPS[0],ex:`${A} : ${d}`,ans,s:[`${ans} L`,`${ans} botila`,`${dec(r*d*d,100)} L`],ok:`${ans} L`,h:'«Berdin banatu» → zatiketa.'}},
+ ()=>{let n,g,q,ex;do{n=RI(300,900);g=RI(21,48);q=Math.floor(n/g);ex=dec(Math.floor(n*100/g),100)}while(!ex.includes(',')||ex.startsWith(q+1+','));return{t:`Gozogile batek ${g} g irin behar ditu opil bakoitzeko. Zenbat opil egin ditzake, gehienez, ${n} g irinekin?`,op:OPS[0],ex:`${n} : ${g}`,ans:String(q),cal:'Idatzi zatiketaren zati osoa bakarrik.',s:[`${q} opil`,`${q+1} opil`,`${ex} opil`],ok:`${q} opil`,h:'«Zenbat … gehienez» → zatiketa, eta erdi opilik ez dago: zati osoa bakarrik!'}},
+ ()=>{const p=RI(105,299),m=RI(3,8);const A=dec(p,100),ans=dec(p*m,100);return{t:`Makila bat ${A} m luze da. Soka bat ${m} aldiz luzeagoa da. Zenbat luze da soka?`,op:OPS[1],ex:`${A} × ${m}`,ans,s:[`${ans} m`,`${dec(p,100)} m`,`${ans} aldiz`],ok:`${ans} m`,h:'«… aldiz luzeagoa» → biderketa.'}},
+ ()=>{let p,m,b,tot,ans;do{p=RI(115,345);m=RI(2,4);b=P([10,20]);tot=p*m;ans=dec(b*100-tot,100)}while(tot>=b*100||ans===dec(tot,100));return{t:`June-k ${m} azazkal-pintura erosi ditu, ${dec(p,100)} € bakoitza. ${b} €-ko billetea eman du. Zenbat itzuli diote?`,op:'✖️ eta gero ➖',ops:['✖️ eta gero ➖','➗ Zatiketa','➕ Batuketa','✖️ Biderketa bakarrik'],ex:`${dec(p,100)} × ${m} = ${dec(tot,100)} → ${b} − ${dec(tot,100)}`,ans,s:[`${ans} €`,`${dec(tot,100)} €`,`${ans} pintura`],ok:`${ans} €`,h:'Bi urrats: lehenengo guztira zenbat (×), gero itzulia (−).'}},
+ ()=>{const k=P([2,3,4]),pk=P([5,8,10,20,25,50]);const ans=dec(k*1000,pk*1000);return{t:`${k} kg arroz ${pk} paketetan sartu dituzte, berdin. Zenbat kg pakete bakoitzean?`,op:OPS[0],ex:`${k} : ${pk}`,ans,s:[`${ans} kg`,`${dec(pk*1000,k*1000)} kg`,`${ans} pakete`],ok:`${ans} kg`,h:'Zatitu kiloak pakete kopuruaz: zatikizuna = kg.'}},
+ ()=>{const d=RI(12,28),r=RI(3,9);const A=dec(r*d,10),ans=dec(r,10);return{t:`${A} m zinta ${d} lagunen artean banatu dira, berdin. Zenbat metro bakoitzari?`,op:OPS[0],ex:`${A} : ${d}`,ans,s:[`${ans} m`,`${ans} lagun`,`${dec(r*d*d,10)} m`],ok:`${ans} m`,h:'Banatu → zatiketa. Pentsatu hamarrenetan.'}}];
+ return shuffle(T).slice(0,3).map(f=>f())}
+function gSteps(p){const ops=p.ops||OPS;return[
+ {lv:14,blk:1,kind:'ch',kh:true,prompt:'💅 1. urratsa · Irakurri eta pentsatu',expr:`<div class="def">${p.t}</div><div class="q-prompt" style="text-align:center"><b>Zer eragiketa egin behar da?</b></div>`,opts:shuffle(ops.slice()),ans:p.op,hint:p.h,sol:`<b>${p.op}</b>: ${p.ex}`},
+ {lv:14,blk:1,kind:'num',prompt:'💅 2. urratsa · Kalkulatu koadernoan',expr:`<div class="def">${p.t}</div><div class="big-op sm" style="display:block;text-align:center">${p.ex} = ?</div>${p.cal?`<p class="small" style="text-align:center">${p.cal}</p>`:''}`,ans:p.ans,hint:`Egin eragiketa: ${p.ex}`,sol:`${p.ex} → <b>${p.ans}</b>`},
+ {lv:14,blk:1,kind:'ch',kh:true,prompt:'💅 3. urratsa · Erantzuna (unitatearekin!)',expr:`<div class="def">${p.t}</div>`,opts:shuffle(p.s.concat(p.s.length<4?[]:[]).slice()),ans:p.ok,hint:'Begiratu galdera: zer neurtzen da? (L, m, kg, €, opil…). Eta zentzuzkoa da?',sol:`Erantzuna: <b>${p.ok}</b>`}]}
+function gidatu(){stopTimer();const qs=[];gProblems().forEach(p=>qs.push(...gSteps(p)));qs.push(qBurua());G={mode:'q',lv:14,qs,i:0,marks:[],pts:0,res:[],streak:0};nextQ(true)}
+// eguneko azterketa txikia (8 galdera, 12 min, nota)
+function mini(){stopTimer();const p=gProblems();const qs=[qZat1(),qZero(),qZat2(),P([qBider,qZatiki])(),qKoma(),
+ Object.assign(gSteps(p[0])[1],{lv:14,prompt:'💅 Buruketa',expr:`<div class="def">${p[0].t}</div>`,hint:'',sol:`${p[0].ex} = <b>${p[0].ans}</b>`}),gSteps(p[1])[0],qBurua()];
+ G={mode:'mini',qs,i:0,marks:[],pts:0,res:[],end:Date.now()+12*60000};
+ TM=setInterval(()=>{const e=$('#tm');if(!e)return;const s=Math.max(0,Math.round((G.end-Date.now())/1000));e.textContent=s?`⏱ ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`:'⏱ Lasai, bukatu!'},1000);nextQ(true)}
+const tday=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
+function daysLeft(){const[y,m,d]=EXDATE.split('-');const t=new Date();return Math.round((new Date(+y,m-1,+d)-new Date(t.getFullYear(),t.getMonth(),t.getDate()))/864e5)}
+function miniEnd(){stopTimer();const N=G.qs.length,ok=G.res.filter(r=>r.ok).length;const nota=Math.round(ok/N*10*4)/4;const k=tday();S.notes[k]=Math.max(S.notes[k]||0,nota);save();
+ const bad=[...new Set(G.res.filter(r=>!r.ok).map(r=>r.lv))];const good=nota>=7.5;
+ $('#app').innerHTML=topbar('📝 Gaurko azterketa txikia')+`<div class="card" style="text-align:center"><div style="display:flex;justify-content:center">${jimg(good?3:4,150)}</div>
+ <h2>Nota: <span style="font-size:48px">${String(nota).replace('.',',')}</span></h2><p class="q-prompt">Zuzenak: <b>${ok}</b> / ${N}</p>
+ <h3>${nota>=9?'Bikain! 👑':nota>=7.5?'Oso ondo! 🌟':nota>=5?'Ondo! Hobetu dezakezu 💪':'Lasai: errepasatu hauek eta bihar berriro 💜'}</h3>
+ ${bad.length?`<div class="reslist" style="text-align:left"><p class="q-prompt"><b>Errepasatu:</b></p>${bad.map(l=>{const m=MODES.find(x=>x.id===l);return m?`<div>${m.ic} ${m.n} <button class="big w" style="font-size:16px;padding:6px 12px" onclick="${m.f}">Jolastu</button></div>`:''}).join('')}</div>`:''}
+ ${tbBlock(nota>=9?3:nota>=7.5?2:nota>=5?1:0)}<div class="row center" style="margin-top:16px;margin-bottom:60px"><button class="big w" onclick="home()">Menua</button></div></div>`;scrollTo(0,0)}
+function notesH(){const ks=Object.keys(S.notes).sort().slice(-7);if(!ks.length)return'<p class="small">Oraindik notarik ez. Egin gaurkoa!</p>';return `<div class="notes">${ks.map(k=>`<div><b style="--h:${S.notes[k]*10}%"></b><span>${String(S.notes[k]).replace('.',',')}</span><small>${+k.slice(8)}/${+k.slice(5,7)}</small></div>`).join('')}</div>`}
+
+const GEN={2:qJauzi,3:qZat,4:qKoma,5:qTaula,6:()=>Math.random()<.7?qZatiki():qAstun(),7:qBider,8:qZat1,9:qZat2,10:qMitxi,11:qBurua,12:qAsmatu,13:qZero,16:qZatMix};
 const GENS=()=>{const L=[qJauzi,qZat,qKoma,qTaula];if(S.open[2])L.push(qZatiki,qAstun);if(S.open[3])L.push(qBider);if(S.open[4])L.push(qZat1);if(S.open[5])L.push(qZat2);return L.concat([qMitxi,qBurua,qAsmatu])};
 /* --- egiaztatu --- */
 function check(q,v){if(q.kind==='ch')return v===q.ans?{r:'ok'}:{r:'bad'};
@@ -321,6 +360,10 @@ function stopTimer(){if(TM){clearInterval(TM);TM=null}}
 function topbar(t,x=''){return `<div class="top"><button class="back" onclick="home()">← Menua</button><h2 class="grow">${t}</h2>${x}</div>`}
 const BLK={1:['Zatiketak hamartarrekin','1-3. saioak'],2:['Zatikiak → hamartarrak','4-5. saioak'],3:['Hamartarrak biderkatu','6-7. saioak'],4:['Hamartarrak zatitu (zifra 1)','8-9. saioak'],5:['Hamartarrak zatitu (2 zifra)','11-12. saioak']};
 const MODES=[
+ {id:15,n:'Gaurko azterketa txikia',ic:'📝',s:'8 galdera · 12 min · nota',c:'c3',f:'mini()',b:0},
+ {id:14,n:'Buruketa gidatuak',ic:'💅',s:'Urratsez urrats: eragiketa · kalkulua · erantzuna',c:'c1',f:'gidatu()',b:0},
+ {id:16,n:'Zatiketak errepasatu',ic:'➗',s:'Denetarik: zifra 1, 2 zifra, zeroak',c:'c2',f:'startQ(16)',b:0},
+ {id:13,n:'Zeroa zatiduran',ic:'0️⃣',s:'10,05 : 5 = 2,01',c:'c4',f:'startQ(13)',b:0},
  {id:1,n:'Nola egiten da?',ic:'📖',s:'Trikimailuak urratsez urrats',c:'c1',f:'learn()',b:0},
  {id:2,n:'Koma saltoka',ic:'🦘',s:': 10, : 100, : 1000',c:'c2',f:'startQ(2)',b:1},
  {id:3,n:'Zatiketa hamartarrekin',ic:'➗',s:'37 : 8 = ?',c:'c3',f:'startQ(3)',b:1},
@@ -336,10 +379,11 @@ const MODES=[
 function home(){stopTimer();G=null;const op=openBlocks();
  $('#app').innerHTML=`<div class="hero" style="margin-top:6px"><div style="flex:none">${jimg(1,150)}</div><div class="bubble"><b>Kaixo, June!</b> Gaur <b>zenbaki hamartarrak</b> lantzen ditugu. Ondo jokatu eta irabazi telebista-minutuak! 🐾</div></div>
  <h1 style="margin:16px 4px 10px">Mitxiren hamartar-misioa</h1>
+ ${daysLeft()>=0?`<div class="card exn"><b style="font-size:22px">📝 Azterketa: azaroak 26 · ${daysLeft()?daysLeft()+' egun':'GAUR!'}</b><p class="q-prompt" style="margin:6px 0">Egunero: <b>azterketa txikia</b> + <b>buruketa gidatuak</b>. 15 minutu.</p>${notesH()}</div>`:''}
  <div class="menu">${MODES.map(x=>{const lk=x.b>1&&!S.open[x.b];return `<button class="mbtn ${x.c} ${lk?'lock':''}" onclick="${lk?'lockMsg('+x.b+')':x.f}"><span>${lk?'🔒':x.ic} ${x.n}</span><small>${lk?'Laster: '+BLK[x.b][1]:x.s+' '+(x.id>1?starsH(S.stars[x.id]||0):'')}</small></button>`}).join('')}
  <button class="mbtn c3" onclick="exam()"><span>📝 Azterketa proba</span><small>15 galdera, pistarik gabe</small></button>
  <button class="mbtn c4" onclick="tbPage()"><span>📺 Nire telebista-minutuak</span><small>Gaur: ${tbGet().earned-tbGet().used} min</small></button></div>
- <div class="card c5" style="margin-top:16px"><h3>📅 Egunero, 15-20 minutu</h3><div class="q-prompt" style="margin-top:8px"><b>1.</b> 📖 Trikimailu bat irakurri.<br><b>2.</b> 🎯 <b>Non doa koma?</b> (beti!) + beste joko bat.<br><b>3.</b> ⚡ Tximista-taulak (2 minutu).<br><b>4.</b> Ostiralean: 📝 azterketa proba. ✨</div>
+ <div class="card c5" style="margin-top:16px"><h3>📅 Egunero, 15-20 minutu</h3><div class="q-prompt" style="margin-top:8px"><b>1.</b> 📝 Gaurko azterketa txikia (nota).<br><b>2.</b> 💅 Buruketa gidatuak.<br><b>3.</b> Akatsak? ➗ Zatiketak errepasatu edo 0️⃣ Zeroa zatiduran.<br><b>4.</b> ⚡ Tximista-taulak (2 minutu). ✨</div>
  <p class="small" style="margin-top:8px">Irekita: ${op.map(b=>BLK[b][0]).join(' · ')}</p></div>
  <div class="row center" style="margin:14px 0 60px"><button class="big w" onclick="unlock()">🔐 Aitarentzat: blokeak ireki</button></div>`;scrollTo(0,0)}
 function lockMsg(b){$('#app').insertAdjacentHTML('beforeend','');alert('🔒 '+BLK[b][0]+'\nKlasean ematen dutenean, aitak irekiko du. 🐾')}
@@ -351,9 +395,10 @@ const T=[
  ['Zatiketa hamartarrekin','➗',1,[`Hondarra geratzen bada, ez gelditu! <b>Jarri koma zatiduran</b> eta gehitu <b>0</b> bat hondarrari.`,`<span class="ex">37 : 5 → 37 : 5 = 7, hondarra 2<br>koma jarri → 7,<br>20 : 5 = 4 → <b>7,4</b></span>`,`<span class="ex">37 : 8 → 4, hondarra 5<br>koma → 4,<br>50 : 8 = 6 (hondarra 2) → 4,6<br>20 : 8 = 2 (hondarra 4) → 4,62<br>40 : 8 = 5 → <b>4,625</b></span>`,{c:'warn',h:'<b>Kontuz! Zure akatsak:</b><br>✘ 37 : 5 = <b>74</b> → koma ahaztu zenuen. Zuzena: <b>7,4</b>.<br>✘ 37 : 8 = <b>4,0625</b> → 0 bat gehiegi. 50 : 8 egin daiteke, beraz zatiduran <b>ez</b> da 0 jartzen. Zuzena: <b>4,625</b>.'},{c:'tip',h:'<b>Egiaztatu beti:</b> 4,625 × 8 = 37 ✔'}]],
  ['Zatikiak → hamartarrak','🍰',2,[`Zatiki bat <b>zatiketa</b> bat da: <span class="ex">3/5 = 3 : 5</span>`,`<b>1. metodoa:</b> baliokide bat 10, 100 edo 1000rekin.<br><span class="ex">3/5 = 6/10 = 0,6</span>`,`<b>2. metodoa:</b> zatiketa egin.<br><span class="ex">1/8 = 1 : 8 = 1000 milaren : 8 = 125 milaren = 0,125</span>`,{c:'tip',h:'Gogoratu: 1/2 = 0,5 · 1/4 = 0,25 · 3/4 = 0,75 · 1/5 = 0,2'}]],
  ['Hamartarrak biderkatu','✖️',3,[`Biderkatu <b>komarik ez balego bezala</b>: <span class="ex">405 × 3 = 1215</span>`,`Gero jarri koma: 4,<b>05</b>-ek <b>2</b> hamartar ditu → emaitzak ere <b>2</b>: <span class="ex">4,05 × 3 = 12,15</span>`,{c:'tip',h:'Edo zatika: 0,23 × 9 = 1,8 + 0,27 = <b>2,07</b>'},{c:'warn',h:'<b>Kontuz!</b> Begiratu emaitza zentzuzkoa den: 4 € × 3 ≈ 12 €, ez 1,2 €.'}]],
- ['Hamartarrak zatitu','🧃',4,[`Zatitu <b>zati osoa</b> lehenengo: <span class="ex">6,93 : 3 → 6 : 3 = 2</span>`,`<b>Komara iristean, jarri koma zatiduran</b>, eta jarraitu: <span class="ex">9 hamarren : 3 = 3 → 2,3<br>3 ehunen : 3 = 1 → <b>2,31</b></span>`,`Zati osoa zatitzailea baino txikiagoa bada, hasi <b>0,</b> idatziz: <span class="ex">8,4 : 12 = 84 hamarren : 12 = 7 hamarren = <b>0,7</b></span>`,{c:'tip',h:'<b>Egiaztatu:</b> 2,31 × 3 = 6,93 ✔'}]]];
+ ['Hamartarrak zatitu','🧃',4,[`Zatitu <b>zati osoa</b> lehenengo: <span class="ex">6,93 : 3 → 6 : 3 = 2</span>`,`<b>Komara iristean, jarri koma zatiduran</b>, eta jarraitu: <span class="ex">9 hamarren : 3 = 3 → 2,3<br>3 ehunen : 3 = 1 → <b>2,31</b></span>`,`Zati osoa zatitzailea baino txikiagoa bada, hasi <b>0,</b> idatziz: <span class="ex">8,4 : 12 = 84 hamarren : 12 = 7 hamarren = <b>0,7</b></span>`,{c:'warn',h:'<b>Kontuz! Zure akatsak:</b><br>✘ 10,05 : 5 = <b>2,1</b> → 0 hamarren : 5 = <b>0</b>, idatzi zero! Zuzena: <b>2,01</b>.<br>✘ 9,36 : 3 = 3,<b>13</b> → 6 : 3 = 2. Zuzena: <b>3,12</b>.'},{c:'tip',h:'<b>Egiaztatu:</b> 2,31 × 3 = 6,93 ✔'}]],
+ ['Buruketak: 4 urrats','💅',1,[`<b>1. Irakurri</b> bi aldiz eta azpimarratu datuak.`,`<b>2. Pentsatu</b> eragiketa:<br>«berdin banatu», «zenbat … bakoitzeko» → <b>:</b><br>«… aldiz», «guztira (berdinak)» → <b>×</b><br>«itzuli», «geratzen da» → <b>−</b>`,`<b>3. Kalkulatu</b> koadernoan (koma kontuz!).`,`<b>4. Erantzun</b> esaldi osoz eta <b>unitatearekin</b>: «Botila bakoitzean 0,75 L daude».`,{c:'warn',h:'<b>Kontuz!</b> «Gehienez» eta gauza osoak (edalontziak, opilak): <b>zati osoa bakarrik</b>. 26,71 → 26 edalontzi. Eta 1 kg = 1000 g!'}]]];
 function learn(i=-1,shown=1){if(i<0){$('#app').innerHTML=topbar('📖 Nola egiten da?')+`<div class="lvls" style="margin-top:14px">${T.map((t,k)=>{const lk=!S.open[t[2]];return `<button class="lvl c${(k%5)+1} ${lk?'lock':''}" onclick="${lk?'lockMsg('+t[2]+')':'learn('+k+')'}"><span class="n">${lk?'🔒':t[1]}</span><span>${t[0]}</span></button>`}).join('')}</div>`;return scrollTo(0,0)}
- const t=T[i];const st=t[3].slice(0,shown).map(s=>typeof s==='string'?`<div class="step">${s}</div>`:`<div class="step ${s.c}">${s.h}</div>`).join('');const more=shown<t[3].length;const go={0:'startQ(2)',1:'startQ(3)',2:'startQ(6)',3:'startQ(7)',4:S.open[5]?'startQ(9)':'startQ(8)'}[i];
+ const t=T[i];const st=t[3].slice(0,shown).map(s=>typeof s==='string'?`<div class="step">${s}</div>`:`<div class="step ${s.c}">${s.h}</div>`).join('');const more=shown<t[3].length;const go={0:'startQ(2)',1:'startQ(3)',2:'startQ(6)',3:'startQ(7)',4:S.open[5]?'startQ(9)':'startQ(8)',5:'gidatu()'}[i];
  $('#app').innerHTML=`<div class="top"><button class="back" onclick="learn()">← Trikimailuak</button><h2 class="grow">${t[1]} ${t[0]}</h2></div><div class="card">${st}<div class="row center" style="margin-top:14px">${more?`<button class="big" onclick="learn(${i},${shown+1})">Hurrengoa ▶</button>`:`<button class="big g" onclick="${go}">Jolastera!</button>`}</div></div>`;
  if(shown>1){const s=document.querySelectorAll('.step');s[s.length-1].scrollIntoView({block:'center'})}else scrollTo(0,0)}
 /* --- galdera motorra --- */
@@ -362,17 +407,17 @@ function startQ(id){stopTimer();G={mode:'q',lv:id,qs:Array.from({length:10},()=>
 function exam(){stopTimer();const L=GENS().filter(g=>g!==qAsmatu);const base=[qKoma,qZat,qZat,qJauzi,qBurua,qMitxi];let qs=base.map(g=>g());while(qs.length<15)qs.push(P(L)());
  G={mode:'exam',qs:shuffle(qs),i:0,marks:[],pts:0,res:[],end:Date.now()+20*60000};
  TM=setInterval(()=>{const e=$('#tm');if(!e)return;const s=Math.max(0,Math.round((G.end-Date.now())/1000));e.textContent=s?`⏱ ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`:'⏱ Lasai, bukatu!'},1000);nextQ(true)}
-function nextQ(first){if(!first)G.i++;if(G.i>=G.qs.length)return G.mode==='exam'?examEnd():qEnd();G.q=G.qs[G.i];G.tries=0;G.done=false;qRender()}
-function qRender(){const q=G.q,ex=G.mode==='exam',md=MODES.find(m=>m.id===G.lv);let ctrl='';
+function nextQ(first){if(!first)G.i++;if(G.i>=G.qs.length)return G.mode==='exam'?examEnd():G.mode==='mini'?miniEnd():qEnd();G.q=G.qs[G.i];G.tries=0;G.done=false;qRender()}
+function qRender(){const q=G.q,ex=G.mode!=='q',md=MODES.find(m=>m.id===G.lv);let ctrl='';
  if(q.kind==='ch')ctrl=q.kh?`<div class="kh">${q.opts.map((o,k)=>`<button class="kt opt" data-o="${k}" style="background:${KC[k][1]};box-shadow:0 6px 0 ${KC[k][2]}" onclick="doCheck(${k})"><span class="ks">${KC[k][0]}</span><span>${o}</span></button>`).join('')}</div>`:`<div class="opts ${q.col?'col':''}">${q.opts.map((o,k)=>`<button class="opt" data-o="${k}" onclick="doCheck(${k})">${o}</button>`).join('')}</div>`;
  else ctrl=`<div class="row center"><input class="word" id="wd" inputmode="decimal" autocomplete="off" placeholder="0,0"></div><div class="row center" style="margin-top:8px"><button class="big" onclick="doCheck()">Egiaztatu ✔</button></div>`;
  if(!ex)ctrl+=`<div class="row center" style="margin-top:8px"><button class="big w" onclick="showHint()">💡 Pista</button></div>`;
- $('#app').innerHTML=topbar(ex?'📝 Azterketa proba':`${md.ic} ${md.n}`,`<span class="pill">${G.i+1} / ${G.qs.length}</span>${ex?'<span class="pill" id="tm">⏱ 20:00</span>':(G.streak>=2?`<span class="pill">🔥 ${G.streak}</span>`:'')}`)+
+ $('#app').innerHTML=topbar(ex?(G.mode==='mini'?'📝 Azterketa txikia':'📝 Azterketa proba'):`${md.ic} ${md.n}`,`<span class="pill">${G.i+1} / ${G.qs.length}</span>${ex?'<span class="pill" id="tm">⏱ 20:00</span>':(G.streak>=2?`<span class="pill">🔥 ${G.streak}</span>`:'')}`)+
  (ex?'':`<div style="margin-top:8px">${nailsSVG(G.marks)}<div class="nlabel">Margotutako azazkalak: ${G.marks.filter(Boolean).length}/10</div></div>`)+
  `<div class="card" id="q"><div class="q-prompt" style="text-align:center">${q.prompt}</div>${q.expr}<div id="ctrl" style="margin-top:10px">${ctrl}</div><div class="fb" id="fb"></div></div>`;
  const wd=$('#wd');if(wd){wd.focus({preventScroll:true});wd.addEventListener('keydown',e=>{if(e.key==='Enter')doCheck()})}}
 function showHint(){if(G.done)return;$('#fb').className='fb near';$('#fb').innerHTML='💡 '+G.q.hint}
-function doCheck(k){if(G.done)return;const q=G.q,ex=G.mode==='exam';const v=q.kind==='ch'?q.opts[k]:($('#wd').value||'');const res=check(q,v);const fb=$('#fb');
+function doCheck(k){if(G.done)return;const q=G.q,ex=G.mode!=='q';const v=q.kind==='ch'?q.opts[k]:($('#wd').value||'');const res=check(q,v);const fb=$('#fb');
  if(res.r==='empty'){fb.className='fb near';fb.innerHTML='Idatzi emaitza lehenengo.';return}
  if(res.r==='near'&&!ex&&G.tries===0){G.tries++;fb.className='fb near';fb.innerHTML=res.m;beep('bad');return}
  if(q.kind==='ch')document.querySelectorAll('.opt').forEach(b=>{if(q.opts[b.dataset.o]===q.ans&&res.r==='ok')b.classList.add('good','right');if(+b.dataset.o===k&&res.r!=='ok')b.classList.add('wrong','dim')});
@@ -382,7 +427,7 @@ function doCheck(k){if(G.done)return;const q=G.q,ex=G.mode==='exam';const v=q.ki
  G.marks.push(0);G.res.push({lv:q.lv,ok:false});G.done=true;if(q.kind==='ch')document.querySelectorAll('.opt').forEach(b=>{if(q.opts[b.dataset.o]===q.ans)b.classList.add('good','right')});const w=$('#wd');if(w)w.disabled=true;
  fb.className='fb bad';fb.innerHTML=`${res.r==='near'?res.m+'<br>':''}Erantzun zuzena:<div class="sol" style="font-size:19px">${q.sol}</div>`;finishQ()}
 function finishQ(){$('#ctrl').innerHTML=`<div class="row center"><button class="big g" onclick="nextQ()">Hurrengoa ▶</button></div>`;
- if(G.mode!=='exam'){const nl=document.querySelector('.nails');if(nl){nl.outerHTML=nailsSVG(G.marks);document.querySelector('.nlabel').textContent=`Margotutako azazkalak: ${G.marks.filter(Boolean).length}/10`}}}
+ if(G.mode==='q'){const nl=document.querySelector('.nails');if(nl){nl.outerHTML=nailsSVG(G.marks);document.querySelector('.nlabel').textContent=`Margotutako azazkalak: ${G.marks.filter(Boolean).length}/10`}}}
 function qEnd(){const st=G.pts>=9?3:G.pts>=7?2:G.pts>=5?1:0;S.stars[G.lv]=Math.max(S.stars[G.lv]||0,st);save();const md=MODES.find(m=>m.id===G.lv);
  endScreen(`${md.ic} ${md.n}`,`Puntuak: <b>${G.pts}</b> / 10`,st,`startQ(${G.lv})`,G.marks)}
 function endScreen(name,line,st,again,marks){
