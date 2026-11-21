@@ -98,7 +98,7 @@ const jimg=(n,h=120)=>`<img src="${JUNE[n]}" alt="June" height="${h}" style="hei
 
 document.getElementById('jn').innerHTML=jimg(1,120);
 try{const t=new Date(),k=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
-const D=JSON.parse(localStorage.getItem('june-rutina-v1')||'{}');const L=(D.log||{})[k]||{done:[]};const n=(D.tasks||[]).length||11;
+const D=JSON.parse(localStorage.getItem('june-rutina-v1')||'{}');const L=(D.log||{})[k]||{done:[]};const n=(D.tasks||[]).length||10;
 const SUBJ={mate:'🔢 Mates',eusk:'📚 Euskera',inguru:'🌍 Ingurune',lengua:'✏️ Lengua',libre:'⭐ La que elijas'};const P=(D.plan||{1:['mate',20],2:['eusk',15],3:['mate',20],4:['inguru',15],5:['lengua',15],6:['mate',20],0:['libre',15]})[t.getDay()];
 document.getElementById('sub').innerHTML='Hoy toca <b>'+SUBJ[P[0]]+' · '+P[1]+' min</b>';
 document.getElementById('tv').innerHTML='<span>🐾 Tareas: <b>'+L.done.length+'/'+n+'</b></span>'}catch(e){}
